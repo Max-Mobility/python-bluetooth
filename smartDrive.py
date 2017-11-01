@@ -1,6 +1,6 @@
 import pygatt
 from binascii import hexlify
-import time
+import time, signal
 
 adapter = pygatt.BGAPIBackend(serial_port='COM4')
 
@@ -13,6 +13,12 @@ smartDriveChars = [
 ]
 
 dataChar = smartDriveChars[1]
+
+def ctrl_c_handler(signal, frame):
+    adapter.stop();
+    exit(0)
+
+signal.signal(signal.SIGINT, ctrl_c_handler)
 
 def handle_data(handle, value):
     """
@@ -28,14 +34,12 @@ try:
 
     for char in smartDriveChars:
         print ('Subscribing to: ' + char)
-        device.subscribe(char, callback=handle_data)
+        device.subscribe(char, callback=handle_data, indication=True)
 
-    print('Subscribed, sleeping 10')
-    time.sleep(10)
+    print('Subscribed, looping forever; press ctrl+c to quit')
+    while True:
+        # do nothing
+        time.sleep(1)
 
-    value = device.char_read(dataChar, 10)
-    print(value)
-
-finally:
-    print('Failed')
+except:
     adapter.stop()
