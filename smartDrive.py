@@ -4,6 +4,8 @@ import time, signal
 
 adapter = pygatt.BGAPIBackend(serial_port='COM4')
 
+smartDriveName = "Smart Drive DU"
+
 smartDriveChars = [
     "e7add780b0424876aae1112855353cc1",
     "e8add780b0424876aae1112855353cc1",
@@ -13,6 +15,8 @@ smartDriveChars = [
 ]
 
 dataChar = smartDriveChars[1]
+
+smartDriveAddresses = []
 
 def ctrl_c_handler(signal, frame):
     adapter.stop();
@@ -29,12 +33,22 @@ def handle_data(handle, value):
 
 try:
     adapter.start()
-    device = adapter.connect('00:07:80:a5:49:8c')
-    print('Connected')
 
-    for char in smartDriveChars:
-        print ('Subscribing to: ' + char)
-        device.subscribe(char, callback=handle_data, indication=True)
+    devices = adapter.scan();
+
+    for dev in devices:
+        
+        if dev['name'] and dev['name'] == smartDriveName:
+            print("Found Smart Drive DU: " + dev['address'])
+            smartDriveAddresses.append(dev['address'])
+
+    for addr in smartDriveAddresses:
+        device = adapter.connect(addr)
+        print('Connected to '+addr)
+
+        for char in smartDriveChars:
+            print ('Subscribing to: ' + char)
+            device.subscribe(char, callback=handle_data, indication=True)
 
     print('Subscribed, looping forever; press ctrl+c to quit')
     while True:
@@ -42,4 +56,5 @@ try:
         time.sleep(1)
 
 except:
+    print("Stopped")
     adapter.stop()
