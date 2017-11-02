@@ -75,13 +75,13 @@ Units = [
 def printPacket(p):
     print hexlify(p)
 
-def makeSettings(mode, units, flags, tapSens, accel, maxSpeed):
+def makeSettings(s):
     settings = bytearray(16)
-    settings[0] = ControlMode.index(mode)
-    settings[1] = Units.index(units)
-    settings[2] = flags
+    settings[0] = ControlMode.index(s['ControlMode'])
+    settings[1] = Units.index(s['Units'])
+    settings[2] = s['Flags']
 
-    b = struct.pack('fff', *[tapSens, accel, maxSpeed])
+    b = struct.pack('fff', *[s['TapSensitivity'], s['Acceleration'], s['MaxSpeed']])
     for i in range(0,12):
         settings[4+i] = b[i]
 

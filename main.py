@@ -26,7 +26,15 @@ def handle_data(handle, value):
     print("Received data: %s" % hexlify(value))
 
 def main():
-    makeSettings("Advanced", "English", 0x01, 1.0, 0.5, 0.5)
+    settings = makeSettings({
+        "ControlMode": "Advanced",
+        "Units": "English",
+        "Flags": 0x01,
+        "TapSensitivity": 1.0,
+        "Acceleration": 0.5,
+        "MaxSpeed": 0.5
+    })
+    print(hexlify(settings))
     try:
         adapter.start()
     except:
