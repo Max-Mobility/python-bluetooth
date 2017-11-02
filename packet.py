@@ -94,6 +94,7 @@ def makePacket(Type, SubType, data, length):
     packet[1] = TypeToSubType[Type].index(SubType)
     for i in range(0,length):
         packet[2 + i] = data[i]
+    print(hexlify(packet))
     return packet
 
 def makeHeader(version, checksum):
