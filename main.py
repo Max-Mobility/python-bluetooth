@@ -26,10 +26,10 @@ def handle_data(handle, value):
               received on
     value -- bytearray, the data returned in the notification
     """
-    print("Received data: %s" % hexlify(value))
+    #print("Received data: %s" % hexlify(value))
     if len(value) == 18:
         motorOn = bool(value[2])
-        print("Motor status: " + str(motorOn))
+        print("Motor status: " + ("On" if motorOn else "Off"))
 
 def main():
     settings = makeSettings({
