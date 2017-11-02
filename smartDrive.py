@@ -151,13 +151,14 @@ def main():
     print('Subscribed, looping forever; press ctrl+c to quit')
     while True:
         # do nothing
-        '''
-        for k,v in smartDrives:
-            v.char_write(
-                ctrlChar,
-                makePacket("Command", "Tap", [], 0)
-            )
-        '''
+        for k,v in smartDrives.iteritems():
+            try:
+                v.char_write(
+                    ctrlChar,
+                    makePacket("Command", "Tap", [], 0)
+                )
+            except:
+                print("Couldn't write to: "+k)
         time.sleep(1)
 
 
