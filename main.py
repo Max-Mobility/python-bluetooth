@@ -3,6 +3,7 @@ from binascii import hexlify
 import time, signal
 
 from smartDrive import *
+from app import *
 
 from packet import *
 
@@ -31,6 +32,9 @@ def handle_data(handle, value):
         motorOn = bool(value[2])
         print("Motor status: " + ("On" if motorOn else "Off"))
 
+def handle_app_data(handle, value):
+    print("Received data: %s" % hexlify(value))
+
 def main():
     settings = makeSettings({
         "ControlMode": "Advanced",
@@ -58,6 +62,14 @@ def main():
             print("Found Smart Drive DU: " + dev['address'] + ' ' + str(dev['rssi']))
             smartDriveAddresses.append(dev['address'])
 
+        elif dev.has_key('packet_data') and\
+           dev['packet_data'].has_key('connectable_advertisement_packet') and\
+           dev['packet_data']['connectable_advertisement_packet'].has_key('complete_list_128-bit_service_class_uuids') and\
+           dev['packet_data']['connectable_advertisement_packet']['complete_list_128-bit_service_class_uuids'][0] == appService[0] and\
+           dev['rssi'] > -80:
+            print("Found PushTracker App: " + dev['address'] + ' ' + str(dev['rssi']))
+            appAddresses.append(dev['address'])
+
     for addr in smartDriveAddresses:
         try:
             device = adapter.connect(addr)
@@ -72,6 +84,24 @@ def main():
             print ('Subscribing to: ' + char)
             try:
                 device.subscribe(char, callback=handle_data, indication=True)
+            except:
+                print("Couldn't subscribe to: " + char)
+
+    for addr in appAddresses:
+        device = adapter.connect(addr)
+        try:
+            device = adapter.connect(addr)
+        except:
+            print("Couldn't connect to: "+addr)
+            continue
+
+        apps[addr] = device
+        print('Connected to '+addr)
+
+        for char in appChars:
+            print ('Subscribing to: ' + char)
+            try:
+                device.subscribe(char, callback=handle_app_data, indication=True)
             except:
                 print("Couldn't subscribe to: " + char)
 
