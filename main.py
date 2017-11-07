@@ -49,8 +49,11 @@ def main():
     devices = adapter.scan();
 
     for dev in devices:
-        
-        if dev['name'] and dev['name'] == smartDriveName and\
+        #print(dev)
+        if dev.has_key('packet_data') and\
+           dev['packet_data'].has_key('connectable_advertisement_packet') and\
+           dev['packet_data']['connectable_advertisement_packet'].has_key('complete_list_128-bit_service_class_uuids') and\
+           dev['packet_data']['connectable_advertisement_packet']['complete_list_128-bit_service_class_uuids'][0] == smartDriveService[0] and\
            dev['rssi'] > -80:
             print("Found Smart Drive DU: " + dev['address'] + ' ' + str(dev['rssi']))
             smartDriveAddresses.append(dev['address'])
