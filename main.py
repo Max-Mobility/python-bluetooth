@@ -7,6 +7,10 @@ from app import *
 
 from packet import *
 
+#import logging
+#logging.basicConfig()
+#logging.getLogger('pygatt').setLevel(logging.DEBUG)
+
 adapter = pygatt.BGAPIBackend(serial_port='COM4')
 
 def stop(code):
@@ -45,12 +49,9 @@ def main():
         "MaxSpeed": 0.5
     })
     print(hexlify(settings))
-    try:
-        adapter.start()
-    except:
-        stop(-1)
+    adapter.start()
 
-    devices = adapter.scan();
+    devices = adapter.scan(timeout=1);
 
     for dev in devices:
         #print(dev)
@@ -70,11 +71,12 @@ def main():
             print("Found PushTracker App: " + dev['address'] + ' ' + str(dev['rssi']))
             appAddresses.append(dev['address'])
 
+    '''
     for addr in smartDriveAddresses:
         try:
             device = adapter.connect(addr)
         except:
-            print("Couldn't connect to: "+addr)
+            print("Couldn't connect to SmartDrive at: "+addr)
             continue
 
         smartDrives[addr] = device
@@ -86,14 +88,25 @@ def main():
                 device.subscribe(char, callback=handle_data, indication=True)
             except:
                 print("Couldn't subscribe to: " + char)
+    '''
 
     for addr in appAddresses:
-        device = adapter.connect(addr)
         try:
-            device = adapter.connect(addr)
-        except:
-            print("Couldn't connect to: "+addr)
+            device = adapter.connect(
+                address=addr,
+                timeout=10,
+                address_type=pygatt.BLEAddressType.random,
+                interval_min=60,
+                interval_max=75,
+                supervision_timeout=100,
+                latency=0
+            )
+        except pygatt.exceptions.NotConnectedError:
+            print("Couldn't connect to app at: "+addr)
             continue
+        except pygatt.exceptions.BLEError:
+            print("Unknown error connecting to app at: "+addr)
+            stop(-1)
 
         apps[addr] = device
         print('Connected to '+addr)
@@ -102,6 +115,7 @@ def main():
             print ('Subscribing to: ' + char)
             try:
                 device.subscribe(char, callback=handle_app_data, indication=True)
+                device.char_write(char, [0x01, 0x00])
             except:
                 print("Couldn't subscribe to: " + char)
 
