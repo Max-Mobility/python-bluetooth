@@ -48,7 +48,6 @@ def main():
         "Acceleration": 0.5,
         "MaxSpeed": 0.5
     })
-    print(hexlify(settings))
     adapter.start()
 
     devices = adapter.scan(timeout=1);
@@ -71,7 +70,6 @@ def main():
             print("Found PushTracker App: " + dev['address'] + ' ' + str(dev['rssi']))
             appAddresses.append(dev['address'])
 
-    '''
     for addr in smartDriveAddresses:
         try:
             device = adapter.connect(addr)
@@ -88,7 +86,6 @@ def main():
                 device.subscribe(char, callback=handle_data, indication=True)
             except:
                 print("Couldn't subscribe to: " + char)
-    '''
 
     for addr in appAddresses:
         try:
